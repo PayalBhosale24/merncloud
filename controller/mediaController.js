@@ -24,8 +24,17 @@ conn.once('open', () => {
     console.log("GridFS initialized successfully.");
 });
 
-
-export const uploadMediaController = async (req, res) => {
+/*  const cloudinaryResult = await cloudinary.uploader.upload_stream(
+            { folder: 'media', resource_type: "auto" },
+            (error, result) => {
+                if (error) {
+                    console.error("Cloudinary upload failed:", error.message);
+                    throw new Error("Cloudinary upload failed");
+                }
+                return result;
+            }
+        ).end(req.file.buffer); */ // Use the in-memory file buffer
+/* export const uploadMediaController = async (req, res) => {
     try {
         console.log("Uploading file...");
 
@@ -39,16 +48,7 @@ export const uploadMediaController = async (req, res) => {
             folder: 'media',
             resource_type: "auto",
         }); 
-       /*  const cloudinaryResult = await cloudinary.uploader.upload_stream(
-            { folder: 'media', resource_type: "auto" },
-            (error, result) => {
-                if (error) {
-                    console.error("Cloudinary upload failed:", error.message);
-                    throw new Error("Cloudinary upload failed");
-                }
-                return result;
-            }
-        ).end(req.file.buffer); */ // Use the in-memory file buffer
+       
 
         console.log("Cloudinary upload successful:", cloudinaryResult);
 
@@ -71,10 +71,50 @@ export const uploadMediaController = async (req, res) => {
     }
 };
 
+ */
+
+export const uploadMediaController = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded.', success: false });
+        }
+        if (!req.userId) {
+            return res.status(400).json({ message: 'User ID is missing.', success: false });
+        }
+
+        // Upload file to Cloudinary
+        const cloudinaryResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                { folder: 'media', resource_type: 'auto' },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            uploadStream.end(req.file.buffer); // Use the in-memory file buffer
+        });
+
+        // Save metadata to MongoDB
+        await Media.create({
+            filename: cloudinaryResult.public_id,
+            keywords: req.body.keywords,
+            visible: req.body.visible,
+            userId: req.userId,
+            contentType: req.file.mimetype,
+            size: req.file.size,
+            cloudinaryUrl: cloudinaryResult.secure_url,
+        });
+
+        res.status(201).json({ message: 'Media uploaded successfully.', success: true });
+    } catch (error) {
+        console.error('Upload error:', error.message);
+        res.status(500).json({ message: 'Upload failed.', error: error.message });
+    }
+};
 
 
 // downloadMediaController - redirect to Cloudinary URL for the file
-export const downloadMediaController = async (req, res) => {
+/* export const downloadMediaController = async (req, res) => {
     try {
         console.log("Attempting to find media:", req.params.filename);
         const file = await Media.findOne({ filename: req.params.filename });
@@ -91,7 +131,25 @@ export const downloadMediaController = async (req, res) => {
         console.error("Error while downloading media:", error.message);
         return res.status(500).json({ message: 'Error while getting the Media.', error: error.message, success: false });
     }
+}; */
+
+export const downloadMediaController = async (req, res) => {
+    try {
+        const file = await Media.findOne({ filename: req.params.filename });
+        if (!file) {
+            return res.status(404).json({ message: 'Media does not exist.', success: false });
+        }
+        // Redirect to Cloudinary URL for download
+        return res.redirect(file.cloudinaryUrl);
+    } catch (error) {
+        console.error('Error while downloading media:', error.message);
+        res.status(500).json({ message: 'Error while getting the media.', error: error.message });
+    }
 };
+
+
+
+
 
 /* export const downloadMediaController = async (req, res) => {
     try {
