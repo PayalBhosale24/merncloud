@@ -35,10 +35,20 @@ export const uploadMediaController = async (req, res) => {
         console.log("File details:", req.file);
         console.log("Request body:", req.body);
 
-        const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+       /*  const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
             folder: 'media',
             resource_type: "auto",
-        });
+        }); */
+        const cloudinaryResult = await cloudinary.uploader.upload_stream(
+            { folder: 'media', resource_type: "auto" },
+            (error, result) => {
+                if (error) {
+                    console.error("Cloudinary upload failed:", error.message);
+                    throw new Error("Cloudinary upload failed");
+                }
+                return result;
+            }
+        ).end(req.file.buffer); // Use the in-memory file buffer
 
         console.log("Cloudinary upload successful:", cloudinaryResult);
 

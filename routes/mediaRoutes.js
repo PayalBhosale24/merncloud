@@ -7,7 +7,7 @@ import { deleteMediaController, downloadMediaController, editMediaController, ge
 const router = Router();
 dotenv.config();
 
-const storage = multer.diskStorage({
+/* const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         // Set the destination folder for uploaded files
         cb(null, '../uploads/'); // Ensure this directory exists or create it if necessary
@@ -16,7 +16,8 @@ const storage = multer.diskStorage({
         // Set the filename to be unique by appending a timestamp
         cb(null, `${Date.now()}.${file.originalname.split('.').pop()}`);
     }
-});
+}); */
+const storage = multer.memoryStorage();
 
 // Create the multer instance with the defined storage and limits
 const upload = multer({
