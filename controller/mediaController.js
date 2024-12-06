@@ -35,11 +35,11 @@ export const uploadMediaController = async (req, res) => {
         console.log("File details:", req.file);
         console.log("Request body:", req.body);
 
-       /*  const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+         const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
             folder: 'media',
             resource_type: "auto",
-        }); */
-        const cloudinaryResult = await cloudinary.uploader.upload_stream(
+        }); 
+       /*  const cloudinaryResult = await cloudinary.uploader.upload_stream(
             { folder: 'media', resource_type: "auto" },
             (error, result) => {
                 if (error) {
@@ -48,7 +48,7 @@ export const uploadMediaController = async (req, res) => {
                 }
                 return result;
             }
-        ).end(req.file.buffer); // Use the in-memory file buffer
+        ).end(req.file.buffer); */ // Use the in-memory file buffer
 
         console.log("Cloudinary upload successful:", cloudinaryResult);
 
