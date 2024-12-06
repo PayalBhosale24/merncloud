@@ -8,7 +8,7 @@ import mediaRoutes from './routes/mediaRoutes.js'
 import path from 'path'
 dotenv.config()
 const app = express()
-const port = 8000;
+const port = process.env.PORT || 8000;
 app.use(cors())
 app.use(express.json({ extended: true }))
 app.use(express.urlencoded({ extended: true }))
