@@ -4,7 +4,7 @@ mongoose.set('strictQuery', true);
 
 const Connection = async () => {
     try {
-        await mongoose.connect("mongodb://localhost:27017/mern-cloud", { useNewUrlParser: true })
+        await mongoose.connect("mongodb+srv://payalbhosale2507:Payal@1225@cluster0.ycn1i.mongodb.net/", { useNewUrlParser: true })
         console.log(`Connected to Database Successfully`);
     } catch (error) {
         console.log('Disconnected', error);
